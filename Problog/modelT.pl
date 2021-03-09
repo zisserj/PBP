@@ -10,9 +10,9 @@ bt1(T,Q) :- T>0, TT is T-1,(
             ).
 
 
-requested(T,h(I)) :- bt1(T,q0), between(1,10,I).
-requested(T,g(I)) :- bt1(T,q1), between(1,10,I).
-requested(T,o(I)) :- bt1(T,q2), between(1,10,I).
+requested(T,h(I)) :- bt1(T,q0), between(1,{door_num},I).
+requested(T,g(I)) :- bt1(T,q1), between(1,{door_num},I).
+requested(T,o(I)) :- bt1(T,q2), between(1,{door_num},I).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 bt2(0,q0).
 bt2(T,Q) :- T>0, TT is T-1,(
