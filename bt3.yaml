@@ -1,0 +1,34 @@
+# "name": "Montyhall.bt3", 
+# "start": "0", 
+# "runDate": "2021-07-27T18:04:18.125303914",
+# "# states": 4, 
+# "# transitions": 3, 
+# "# traces": 3, 
+initial: state_0
+states:
+  - id: state_0
+    R: []
+    W: [g1,g2,g3]
+    B: []
+  - id: state_1
+    R: []
+    W: []
+    B: [o1]
+  - id: state_2
+    R: []
+    W: []
+    B: [o3]
+  - id: state_3
+    R: []
+    W: []
+    B: []
+transitions:
+  - source: 0
+    target: 1
+    event: g1
+  - source: 0
+    target: 2
+    event: g3
+  - source: 0
+    target: 3
+    event: g2
