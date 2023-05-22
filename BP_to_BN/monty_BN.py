@@ -1,47 +1,35 @@
-from pomegranate import *
+import numpy as np
+from pomegranate import distributions
+from pomegranate.bayesian_network import BayesianNetwork
+from itertools import product
 
-guest = DiscreteDistribution({'A': 1./3, 'B': 1./3, 'C': 1./3})
-prize = DiscreteDistribution({'A': 1./3, 'B': 1./3, 'C': 1./3})
-monty = ConditionalProbabilityTable(
-        [['A', 'A', 'A', 0.0],
-         ['A', 'A', 'B', 0.5],
-         ['A', 'A', 'C', 0.5],
-         ['A', 'B', 'A', 0.0],
-         ['A', 'B', 'B', 0.0],
-         ['A', 'B', 'C', 1.0],
-         ['A', 'C', 'A', 0.0],
-         ['A', 'C', 'B', 1.0],
-         ['A', 'C', 'C', 0.0],
-         ['B', 'A', 'A', 0.0],
-         ['B', 'A', 'B', 0.0],
-         ['B', 'A', 'C', 1.0],
-         ['B', 'B', 'A', 0.5],
-         ['B', 'B', 'B', 0.0],
-         ['B', 'B', 'C', 0.5],
-         ['B', 'C', 'A', 1.0],
-         ['B', 'C', 'B', 0.0],
-         ['B', 'C', 'C', 0.0],
-         ['C', 'A', 'A', 0.0],
-         ['C', 'A', 'B', 1.0],
-         ['C', 'A', 'C', 0.0],
-         ['C', 'B', 'A', 1.0],
-         ['C', 'B', 'B', 0.0],
-         ['C', 'B', 'C', 0.0],
-         ['C', 'C', 'A', 0.5],
-         ['C', 'C', 'B', 0.5],
-         ['C', 'C', 'C', 0.0]], [guest, prize])
+# building on https://github.com/jmschrei/pomegranate/blob/f0b966e8fb0d6cf27b0d83a6f826d739751d91d4/examples/Bayesian_Network_Monty_Hall.ipynb
 
-s1 = Node(guest, name="guest")
-s2 = Node(prize, name="prize")
-s3 = Node(monty, name="monty")
+num_doors = 3
 
-model = BayesianNetwork("Monty Hall Problem")
-model.add_states(s1, s2, s3)
-model.add_edge(s1, s3)
-model.add_edge(s2, s3)
-model.bake()
-                           
-# print(model.marginal())
-print(model.predict_proba([['A', None, 'A']]))
-print(model.predict_proba([['A', None, 'B']]))
-print(model.predict_proba([['A', None, 'C']]))
+door_rate = 1./num_doors
+uniform_dist = np.ones([1, num_doors]) * door_rate
+
+guess = distributions.Categorical(uniform_dist)
+hide = distributions.Categorical(uniform_dist)
+
+# generate transition matrix
+probs_matrix = np.ones((1, num_doors, num_doors, num_doors)) * (1/(num_doors-2))
+
+for g in range(num_doors):
+    # [0,table,row,column]
+    np.fill_diagonal(probs_matrix[0,g], 0)
+    probs_matrix[0,g,g,:] = 1/(num_doors-1)
+    probs_matrix[0,g,:,g] = 0
+
+open_door = distributions.ConditionalCategorical(probs_matrix)
+
+model = BayesianNetwork([guess, hide, open_door], [(guess, open_door), (hide, open_door)])
+
+
+# making inferences
+X1 = torch.tensor([[2, 1, -1]])
+
+X1_masked = torch.masked.MaskedTensor(X1, mask=X1 >= 0)
+
+model.predict(X1_masked)
